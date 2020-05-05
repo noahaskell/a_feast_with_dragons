@@ -40,7 +40,6 @@ def initialize_new_book():
               'according to the A Feast with ' + \
               'Dragons specification'
     new_book.add_metadata('DC', 'description', descrip)
-
     return new_book
 
 
@@ -60,15 +59,15 @@ def parse_book(filename, chapter_title_marks, names):
     for item in book.get_items():
         ss = item.content
         i = ss.find(pre)
-        if i > 0:
+        if i > 0: # a chapter with a regularly formatted chapter title
             j = ss[i:].find(post)
             title = ss[i+delta:i+j].lower().replace(b'\xe2\x80\x99', b"'")
-            if title in names:
+            if title in names: # name + number chapter
                 if name_count[title] == 0:
                     chapters[title] = {}
                 name_count[title] += 1
                 this_count = name_count[title]
-            else:
+            else: # other chapter
                 chapters[title] = {}
                 this_count = 0
             chapters[title][this_count] = {}
@@ -83,17 +82,24 @@ def parse_book(filename, chapter_title_marks, names):
 
 if __name__ == "__main__":
             
-    AFFC_fn = 'ASOIAF_4_A_Feast_for_Crows.epub'
+    # AFFC chapter title marker and filename
     AFFC_mk = b'<h3 class="calibre5">', b'</h3>'
-    ADWD_fn = 'ASOIAF_5_A_Dance_with_Dragons.epub'
-    ADWD_mk = b'<span class="calibre18">', b'</span>'
+    AFFC_fn = 'ASOIAF_4_A_Feast_for_Crows.epub'
 
+    # ADWD chapter title marker and filename
+    ADWD_mk = b'<span class="calibre18">', b'</span>'
+    ADWD_fn = 'ASOIAF_5_A_Dance_with_Dragons.epub'
+
+    # AFWD chapter list, names that need roman numerals
     chapter_d, names_s = parse_chapters()
     names_b = [n.encode() for n in names_s]
+
+    # parse original ebooks, make a big dictionary
     AFFC_ch, AFFC_css = parse_book(AFFC_fn, AFFC_mk, names_b)
     ADWD_ch, ADWD_css = parse_book(ADWD_fn, ADWD_mk, names_b)
     book_d = {'AFFC': AFFC_ch, 'ADWD': ADWD_ch}
 
+    # construct A Feast with Dragons
     AFWD = initialize_new_book()
 
     toc = []
@@ -103,6 +109,7 @@ if __name__ == "__main__":
         ctr += 1
         ch_name = v['chapter']
         book = v['book']
+        # name and roman numeral?
         name = ch_name.split(' ')[0].lower().encode()
         rest = ch_name.split(' ')[-1]
         if name in names_b and rest in roman_numerals:
