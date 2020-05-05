@@ -2,16 +2,10 @@ from ebooklib import epub
 import csv
 
 
-identifier = '23skidoo'
+rom_d = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7,
+         'VIII': 8, 'IX': 9, 'X': 10, 'XI': 11, 'XII': 12, 'XIII': 13}
 
-num_d = {1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII',
-         8: 'VIII', 9: 'IX', 10: 'X', 11: 'XI', 12: 'XII', 13: 'XIII'}
-
-rom_d = {}
-for k, v in num_d.items():
-    rom_d[v] = k
-
-roman_numerals = list(num_d.values())
+roman_numerals = list(rom_d.keys())
 
 def parse_chapters(filename='A Feast With Dragons.csv', rn=roman_numerals):
     ch_list = []
@@ -37,7 +31,7 @@ def parse_chapters(filename='A Feast With Dragons.csv', rn=roman_numerals):
 
 def initialize_new_book():
     new_book = epub.EpubBook()
-    new_book.set_identifier(identifier)
+    new_book.set_identifier('23skidoo')
     new_book.set_title('A Feast with Dragons')
     new_book.set_language('en')
     new_book.add_author('George R. R. Martin')
@@ -83,25 +77,8 @@ def parse_book(filename, chapter_title_marks, names):
             chapters[title][this_count]['content'] = content
 
     css = book.get_item_with_id('css')
-    ncx = book.get_item_with_id('ncx')
 
-    return chapters, css, ncx
-
-
-# NOTE ncx not working
-def make_ncx_xml(book):
-    with open('ncx_template.xml') as f:
-        ncx_temp_l = f.readlines()
-    ncx_temp_s = ''.join(ncx_temp_l).replace('[UUID]', identifier)
-    ncx_body_s = '<navMap>'
-    for i, c in enumerate(book.toc):
-        j = i+1
-        s0 = '<navPoint id="navpoint{0}" playOrder="{1}">'.format(j, j)
-        s1 = '<navLabel><text>{0}</text></navLabel>'.format(c.title)
-        s2 = '<content src="text/{0}"/></navPoint>'.format(c.href.replace('html', 'xhtml'))
-        ncx_body_s += s0 + s1 + s2
-    ncx_body_s += '</navMap>'
-    return ncx_temp_s + ncx_body_s
+    return chapters, css
 
 
 if __name__ == "__main__":
@@ -113,8 +90,8 @@ if __name__ == "__main__":
 
     chapter_d, names_s = parse_chapters()
     names_b = [n.encode() for n in names_s]
-    AFFC_ch, AFFC_css, AFFC_ncx = parse_book(AFFC_fn, AFFC_mk, names_b)
-    ADWD_ch, ADWD_css, AFFC_ncx = parse_book(ADWD_fn, ADWD_mk, names_b)
+    AFFC_ch, AFFC_css = parse_book(AFFC_fn, AFFC_mk, names_b)
+    ADWD_ch, ADWD_css = parse_book(ADWD_fn, ADWD_mk, names_b)
     book_d = {'AFFC': AFFC_ch, 'ADWD': ADWD_ch}
 
     AFWD = initialize_new_book()
@@ -133,13 +110,11 @@ if __name__ == "__main__":
         else:
             name = ch_name.lower().encode()
             chapter_ct = 0
-        #this_link = book_d[book][name][chapter_ct]['name']
         new_ch_name = ch_name + ' ' + v['book']
         this_link = new_ch_name.replace(' ', '_') + '.html'
         this_chapter = epub.EpubHtml(title=new_ch_name,
                                      file_name=this_link,
-                                     lang='en', uid=identifier) # str(ctr)? identifier?
-        #this_chapter = book_d[book][name][chapter_ct]['content']
+                                     lang='en', uid=str(ctr))
         this_chapter.set_content(book_d[book][name][chapter_ct]['content'])
         toc.append(epub.Link(this_link, ch_name))
         spine.append(this_chapter)
@@ -148,14 +123,6 @@ if __name__ == "__main__":
 AFWD.toc = toc
 AFWD.spine = spine
 AFWD.add_item(AFFC_css)
-
-#ncx_content = make_ncx_xml(AFWD).encode()
-#AFWD_ncx = epub.EpubNcx()
-#AFWD_ncx.set_content(ncx_content)
-#AFWD.add_item(AFWD_ncx)
-
-# nav not working
 AFWD.add_item(epub.EpubNav())
 
-epub.write_epub('A Feast with Dragons.epub', AFWD) #,
-                #{'play_order': {'enabled': True, 'start_from': 1}})
+epub.write_epub('A Feast with Dragons.epub', AFWD)
