@@ -2,7 +2,7 @@ from ebooklib import epub
 import csv
 
 
-def parse_chapters(filename='A Feast With Dragons.csv', rn=roman_numerals):
+def parse_chapters(filename, rom_num):
     ch_list = []
     with open(filename) as f:
         reader = csv.reader(f)
@@ -19,7 +19,7 @@ def parse_chapters(filename='A Feast With Dragons.csv', rn=roman_numerals):
         # c == 'NAME ROMAN_NUMERAL' or 'WORD WORD ... WORD'
         nn = c.split(' ')[0].lower()
         rr = c.split(' ')[-1]
-        if any([r == rr for r in rn]) and nn not in names:
+        if any([r == rr for r in rom_num]) and nn not in names:
             names.append(nn)
     return ch_d, names
 
@@ -91,7 +91,8 @@ if __name__ == "__main__":
     ADWD_fn = 'ASOIAF_5_A_Dance_with_Dragons.epub'
 
     # AFWD chapter list, names that need roman numerals
-    chapter_d, names_s = parse_chapters()
+    chapter_d, names_s = parse_chapters(filename='A Feast with Dragons.csv',
+                                        rom_num=roman_numerals)
     names_b = [n.encode() for n in names_s]
 
     # parse original ebooks, make a big dictionary
