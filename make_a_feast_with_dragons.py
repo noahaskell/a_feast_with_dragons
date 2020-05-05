@@ -2,11 +2,6 @@ from ebooklib import epub
 import csv
 
 
-rom_d = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7,
-         'VIII': 8, 'IX': 9, 'X': 10, 'XI': 11, 'XII': 12, 'XIII': 13}
-
-roman_numerals = list(rom_d.keys())
-
 def parse_chapters(filename='A Feast With Dragons.csv', rn=roman_numerals):
     ch_list = []
     with open(filename) as f:
@@ -82,6 +77,11 @@ def parse_book(filename, chapter_title_marks, names):
 
 if __name__ == "__main__":
             
+    rom_d = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7,
+             'VIII': 8, 'IX': 9, 'X': 10, 'XI': 11, 'XII': 12, 'XIII': 13}
+
+    roman_numerals = list(rom_d.keys())
+
     # AFFC chapter title marker and filename
     AFFC_mk = b'<h3 class="calibre5">', b'</h3>'
     AFFC_fn = 'ASOIAF_4_A_Feast_for_Crows.epub'
